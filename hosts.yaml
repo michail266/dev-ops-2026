@@ -1,0 +1,23 @@
+---
+control:
+  hosts:
+    local-control:
+      ansible_connection: local
+    control-vm:
+      ansible_host: control
+
+appservers:
+    hosts:
+      appserver-vm:
+        ansible_host: appserver
+      frontend-vm:
+        ansible_host: frontserver
+      gcloud-app-server:
+        ansible_host: devops-gcloud
+
+      
+
+dbservers:
+    hosts:
+      dbserver-vm:
+          ansible_host: dbserver
