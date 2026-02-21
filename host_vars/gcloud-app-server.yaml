@@ -3,7 +3,7 @@ app:
     server.port: "{{app_port}}"
     spring.datasource.username: appuser
     spring.datasource.password: apppassword
-    spring.datasource.url: jdbc:postgresql://4.211.249.239:5432/appdb #needs private IP of the DB server
+    spring.datasource.url: jdbc:postgresql://172.17.0.4:5432/appdb #needs private IP of the DB server
 
 service:
   workingdir: "/home/rg/spring"

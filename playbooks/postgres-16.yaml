@@ -17,7 +17,7 @@
 
         - name: edit postgres.conf
           lineinfile: 
-            path: /etc/postgresql/17/main/postgresql.conf
+            path: /etc/postgresql/16/main/postgresql.conf
             regexp: '^#listen_addresses ='
             line:  "listen_addresses='*'"
           notify: 
@@ -27,7 +27,7 @@
 
         - name: edit pg_hba.conf
           lineinfile: 
-            path: /etc/postgresql/17/main/pg_hba.conf
+            path: /etc/postgresql/16/main/pg_hba.conf
             line:  "host	all	all	0.0.0.0/0	md5"
             create: yes
           notify: 
@@ -35,7 +35,7 @@
           tags:
             - edit
                 
- 
+          when: ansible_distribution == 'Ubuntu' and ansible_distribution_version == '24.04'
 
      
         
@@ -44,6 +44,7 @@
           postgresql_user:
             name: "{{ db.user }}"
             password: "{{ db.password }}"
+            state: present
           become: yes
           become_user: postgres
 
@@ -51,6 +52,7 @@
           postgresql_db:
             name: "{{ db.name }}"
             owner: "{{ db.user }}"
+            state: present
           become: yes
           become_user: postgres
           

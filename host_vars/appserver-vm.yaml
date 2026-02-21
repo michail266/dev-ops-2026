@@ -3,7 +3,7 @@ app:
     server.port: "{{app_port}}"
     spring.datasource.username: appuser
     spring.datasource.password: apppassword
-    spring.datasource.url: jdbc:postgresql://10.226.0.2:5432/appdb
+    spring.datasource.url: jdbc:postgresql://20.250.12.217:5432/appdb
 
 service:
   workingdir: "{{ ansible_user_dir }}/spring"
