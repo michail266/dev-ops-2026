@@ -17,7 +17,7 @@
 
     - name: "Clone the Spring repository"
       git:
-        repo: "https://github.com/tsadimasteaching/ds-lab-2024.git"
+        repo: "https://github.com/spiros965/ds_assignment_2024.git"
         dest: "{{ appdir }}"
         version: "{{ branch }}"
         force: yes

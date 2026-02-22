@@ -1,0 +1,60 @@
+- name: Deploy Spring Boot app with Docker Compose
+  hosts: appservers
+  become: yes
+
+  tasks:
+
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+
+    - name: Remove conflicting containerd if present
+      apt:
+       name: containerd
+       state: absent
+
+    - name: Install Docker engine and compose plugin
+      apt:
+        name:
+         - docker.io
+         - docker-compose-plugin
+        state: present
+        update_cache: yes
+
+    - name: Copy application files
+      synchronize:
+        src: "{{ playbook_dir }}/../../../ds_assignment_2024/"
+        dest: /opt/ds_app/
+        rsync_opts:
+          - "--exclude=.git"
+          - "--delete"
+
+
+
+    - name: Ensure .env file is present
+      template:
+        src: .env.j2                   # looked for in playbook_dir/templates
+        dest: /opt/ds_app/.env
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Ensure Docker is started
+      service:
+       name: docker
+       state: started
+       enabled: true
+      become: yes
+
+    - name: Add ansible user to docker group
+      user:
+        name: "{{ ansible_user_id }}"
+        groups: docker
+        append: yes
+      become: yes
+
+    - name: Bring up app with Docker Compose
+      command: docker compose up -d
+      args:
+        chdir: /opt/ds_app
+      become: yes
