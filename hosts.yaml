@@ -11,6 +11,10 @@ appservers:
       appserver-vm:
         ansible_host: appserver
 
+kubernetes:
+    hosts:
+      kubserver-vm:
+          ansible_host: googleCloud
 
 
 dbservers:

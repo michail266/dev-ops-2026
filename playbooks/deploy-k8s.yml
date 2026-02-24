@@ -1,0 +1,42 @@
+- name: Deploy Kubernetes Stack
+  hosts: kubernetes
+  become: yes
+
+  tasks:
+
+    - name: Install snapd
+      apt:
+        name: snapd
+        state: present
+        update_cache: yes
+
+    - name: Install MicroK8s
+      snap:
+        name: microk8s
+        classic: yes
+        state: present
+
+    - name: Enable addons
+      shell: |
+        microk8s enable dns
+        microk8s enable ingress
+        microk8s enable storage
+      args:
+        executable: /bin/bash
+
+    - name: Create k8s directory
+      file:
+        path: /opt/k8s
+        state: directory
+
+    - name: Copy manifests
+      copy:
+        src: k8s/
+        dest: /opt/k8s/
+
+    - name: Create namespace
+      command: microk8s kubectl create namespace devops
+      ignore_errors: yes
+
+    - name: Apply manifests
+      shell: microk8s kubectl apply -f /opt/k8s
