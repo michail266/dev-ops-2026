@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ds-app
+  namespace: devops
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ds-app
+  template:
+    metadata:
+      labels:
+        app: ds-app
+    spec:
+      containers:
+        - name: ds-app
+          image: michail26/ds-app:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: SPRING_DATASOURCE_URL
+              value: jdbc:postgresql://postgres:5432/dsdb
+            - name: SPRING_DATASOURCE_USERNAME
+              value: postgres
+            - name: SPRING_DATASOURCE_PASSWORD
+              value: postgres
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ds-app
+  namespace: devops
+spec:
+  selector:
+    app: ds-app
+  ports:
+    - port: 80
+      targetPort: 8080
