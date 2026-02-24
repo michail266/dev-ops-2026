@@ -1,0 +1,126 @@
+---
+- name: Setup Kubernetes with minikube on Linux
+  hosts: localhost
+  connection: local
+  gather_facts: yes
+  
+  tasks:
+    - name: Check if minikube is installed
+      command: minikube version
+      register: minikube_installed
+      failed_when: false
+      changed_when: false
+
+    - name: Install minikube
+      block:
+        - name: Download minikube
+          get_url:
+            url: "https://github.com/kubernetes/minikube/releases/latest/download/minikube-linux-amd64"
+            dest: "/tmp/minikube"
+            mode: '0755'
+
+        - name: Install minikube
+          become: true
+          copy:
+            src: "/tmp/minikube"
+            dest: "/usr/local/bin/minikube"
+            mode: '0755'
+            remote_src: yes
+
+      when: minikube_installed.rc != 0
+
+    - name: Check if kubectl is installed
+      command: kubectl version --client
+      register: kubectl_installed
+      failed_when: false
+      changed_when: false
+
+    - name: Install kubectl
+      block:
+        - name: Get kubectl version
+          shell: curl -L -s https://dl.k8s.io/release/stable.txt
+          register: kubectl_version_output
+          changed_when: false
+
+        - name: Download kubectl
+          get_url:
+            url: "https://dl.k8s.io/release/{{ kubectl_version_output.stdout }}/bin/linux/amd64/kubectl"
+            dest: "/tmp/kubectl"
+            mode: '0755'
+
+        - name: Install kubectl
+          become: true
+          copy:
+            src: "/tmp/kubectl"
+            dest: "/usr/local/bin/kubectl"
+            mode: '0755'
+            remote_src: yes
+
+      when: kubectl_installed.rc != 0
+
+    - name: Start minikube cluster
+      command: minikube start --memory=4096 --cpus=2 --driver=docker
+      register: minikube_start
+      changed_when: "'Done!' in minikube_start.stdout or 'already running' in minikube_start.stdout"
+
+    - name: Enable minikube ingress addon
+      command: minikube addons enable ingress
+      changed_when: false
+
+    - name: Wait for cluster to be ready
+      command: kubectl cluster-info
+      register: cluster_info
+      retries: 5
+      delay: 10
+      until: cluster_info.rc == 0
+
+    - name: Create Kubernetes namespace
+      kubernetes.core.k8s:
+        name: app-namespace
+        api_version: v1
+        kind: Namespace
+        state: present
+
+    - name: Deploy PostgreSQL
+      kubernetes.core.k8s:
+        state: present
+        definition: "{{ lookup('file', 'kubernetes/manifests/postgres-deployment.yaml') | from_yaml_all }}"
+
+    - name: Deploy Spring Application
+      kubernetes.core.k8s:
+        state: present
+        definition: "{{ lookup('file', 'kubernetes/manifests/spring-deployment.yaml') | from_yaml_all }}"
+
+    - name: Deploy Ingress
+      kubernetes.core.k8s:
+        state: present
+        definition: "{{ lookup('file', 'kubernetes/manifests/ingress.yaml') | from_yaml_all }}"
+
+    - name: Get minikube IP
+      command: minikube ip
+      register: minikube_ip
+      changed_when: false
+
+    - name: Wait for deployments to be ready
+      kubernetes.core.k8s_info:
+        kind: Deployment
+        namespace: app-namespace
+        wait: yes
+        wait_condition:
+          type: Available
+          status: "True"
+      retries: 10
+      delay: 10
+
+    - name: Display cluster information
+      debug:
+        msg:
+          - "=== Kubernetes Cluster Ready ==="
+          - "Minikube IP: {{ minikube_ip.stdout }}"
+          - "Spring API: http://{{ minikube_ip.stdout }}:8080"
+          - "PostgreSQL: {{ minikube_ip.stdout }}:5432"
+          - ""
+          - "Useful commands:"
+          - "  kubectl get pods -n app-namespace"
+          - "  kubectl logs -n app-namespace -l app=spring-app -f"
+          - "  minikube dashboard"

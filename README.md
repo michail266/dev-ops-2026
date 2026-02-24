@@ -1,4 +1,25 @@
-# Project set up
+# DevOps & Kubernetes Project
+
+Simple Kubernetes setup for Linux with:
+- ✅ **Kubernetes with minikube** - Container orchestration
+- ✅ **Ansible** - Infrastructure automation
+- ✅ **Vagrant** - Virtual machines
+- ✅ **PostgreSQL** - Database
+- ✅ **Spring Boot** - Backend application
+
+## Quick Start - Kubernetes
+
+```bash
+# Linux
+bash kubernetes/setup.sh
+```
+
+**See [kubernetes/GETTING-STARTED.md](kubernetes/GETTING-STARTED.md) for full instructions!**
+
+---
+
+# Ansible Setup
+
 * create an inventory file (e.g. hosts or hosts.yaml) that holds the remote hosts that ansible will handle.
 * Example entry is
 ```yaml
@@ -91,11 +112,38 @@ ansible-galaxy install geerlingguy.postgresql
 
 ## Kubernetes
 
-install python kubernetes
-```bash
-sudo apt install python3-kubernetes
+Deploy your application with **minikube** and **kubectl** on Linux.
 
+**📚 Documentation:**
+- [GETTING-STARTED.md](kubernetes/GETTING-STARTED.md) - Setup guide
+- [QUICK-REFERENCE.md](kubernetes/QUICK-REFERENCE.md) - Commands reference
+- [DOCKER-IMAGES.md](kubernetes/DOCKER-IMAGES.md) - Building Docker images
+- [README.md](kubernetes/README.md) - Configuration details
+
+**Quick Commands:**
+
+```bash
+# Setup
+bash kubernetes/setup.sh
+
+# View status
+kubectl get pods -n app-namespace
+
+# View logs
+kubectl logs -n app-namespace -l app=spring-app -f
+
+# Port forward
+kubectl port-forward -n app-namespace svc/spring-app-service 8080:8080
 ```
+
+**Included:**
+- PostgreSQL 16 with persistent storage
+- Spring Boot application (2 replicas)
+- Ingress routing
+- Health checks & auto-recovery
+
+See [kubernetes/](kubernetes/) for all configuration files.
+
 ## Links
 * [apt module](https://docs.ansible.com/ansible/latest/collections/ansible/builtin/apt_module.html)
 * [file module](https://docs.ansible.com/ansible/latest/collections/ansible/builtin/file_module.html)
