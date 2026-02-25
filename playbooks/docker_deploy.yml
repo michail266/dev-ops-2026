@@ -23,7 +23,7 @@
 
     - name: Copy application files
       synchronize:
-        src: "{{ playbook_dir }}/../../../ds_assignment_2024/"
+        src: "{{ playbook_dir }}/../../../ds_assignment_2024/" #had to use absolute path 
         dest: /opt/ds_app/
         rsync_opts:
           - "--exclude=.git"
